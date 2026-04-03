@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Colosseum - Roman Amphitheatre</title>
+    
+    <style>
+        @font-face {
+            font-family: 'SF Distant Galaxy';
+            src: local('SF Distant Galaxy'), url('fonts/SF\ Distant\ Galaxy.ttf') format('truetype');
+        }
+
+        body {
+            background-color: black;
+            margin: 0;
+            font-family: 'SF Distant Galaxy', 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #heading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            z-index: 10;
+            background: linear-gradient(135deg, rgba(139,69,19,0.95), rgba(178,34,34,0.95));
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid #ffd700;
+            box-shadow: 0 0 30px rgba(255,69,0,0.5);
+        }
+
+        .border {
+            font-size: 1.8em;
+            color: white;
+            text-shadow: 0 0 10px #ff6347, 0 0 20px #ff4500;
+            letter-spacing: 3px;
+        }
+
+        .border::before {
+            content: "🏛️ COLOSSEUM - FLAVIAN AMPHITHEATRE 🏛️";
+        }
+
+        #progress-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a0a00, #2a0a0a);
+            z-index: 20;
+            transition: opacity 1s ease;
+        }
+
+        #progress {
+            font-size: 2.5em;
+            color: #ff6347;
+            text-align: center;
+            text-shadow: 0 0 20px #ff4500;
+            animation: pulse 1.5s ease-in-out infinite;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); text-shadow: 0 0 20px #ff6347; }
+            50% { opacity: 0.7; transform: scale(1.05); text-shadow: 0 0 40px #ff0000; }
+        }
+
+        #info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: auto;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(139,69,19,0.85));
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 20px;
+            color: #ffefd5;
+            z-index: 10;
+            border-left: 5px solid #ff6347;
+            border-right: 5px solid #ffd700;
+            max-width: 380px;
+            font-family: 'Arial', sans-serif;
+            box-shadow: 0 0 40px rgba(255,99,71,0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #info-panel h2 {
+            margin: 0 0 15px 0;
+            color: #ff6347;
+            text-shadow: 0 0 5px #ff4500;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        #info-panel p {
+            margin: 10px 0;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        #info-panel .fact {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 22px;
+            color: #ff6347;
+            transition: transform 0.3s;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.2);
+            color: #ff4500;
+        }
+
+        .toggle-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6347, #dc143c);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 15;
+            font-family: 'Arial', sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255,99,71,0.5);
+            font-size: 14px;
+        }
+
+        .toggle-info:hover {
+            background: linear-gradient(135deg, #ff4500, #ff0000);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,99,71,0.8);
+        }
+
+        @media (max-width: 768px) {
+            #info-panel {
+                max-width: calc(100% - 40px);
+                font-size: 11px;
+                padding: 12px;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .border::before {
+                font-size: 0.65em;
+                content: "🏛️ COLOSSEUM 🏛️";
+            }
+            
+            .toggle-info {
+                padding: 8px 16px;
+                font-size: 11px;
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            #progress {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+    
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@v0.163.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@v0.163.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="heading">
+        <div class="border"></div>
+    </div>
+    
+    <div id="progress-container">
+        <div id="progress">🏛️ Loading Colosseum... 🏛️</div>
+    </div>
+    
+    <div id="info-panel">
+        <div class="close-btn" onclick="toggleInfo()">✕</div>
+        <h2>🏛️ COLOSSEUM FACTS 🏛️</h2>
+        <p><span class="fact">📍 Location:</span> Rome, Italy</p>
+        <p><span class="fact">📅 Built:</span> 72-80 AD (8 years)</p>
+        <p><span class="fact">👑 Emperors:</span> Vespasian (started), Titus (completed), Domitian (modifications)</p>
+        <p><span class="fact">📏 Dimensions:</span> 189m long, 156m wide, 48m tall (620ft x 513ft x 157ft)</p>
+        <p><span class="fact">⚖️ Material:</span> Travertine limestone, tuff, brick, concrete</p>
+        <p><span class="fact">👥 Capacity:</span> 50,000 - 80,000 spectators</p>
+        <p><span class="fact">🎭 Events:</span> Gladiator fights, animal hunts, executions, naval battles</p>
+        <p><span class="fact">🔄 Hypogeum:</span> Underground complex with elevators and trapdoors</p>
+        <p><span class="fact">🏗️ Architecture:</span> 80 entrances, 3 tiers of arches (Doric, Ionic, Corinthian)</p>
+        <p><span class="fact">⛪ Modern use:</span> Tourist attraction, Catholic ceremonies (Good Friday)</p>
+        <p><span class="fact">🌍 UNESCO:</span> World Heritage Site since 1980</p>
+        <p><span class="fact">✨ New 7 Wonders:</span> Named one of the New 7 Wonders of the World in 2007</p>
+        <p><span class="fact">🎨 Original color:</span> Painted with bright colors (red, blue, green, gold)</p>
+    </div>
+    
+    <button class="toggle-info" onclick="toggleInfo()">🏛️ Colosseum Info</button>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        
+        // Setup renderer with Roman-themed colors
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x1a0505); // Dark Roman red night
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+        
+        // Scene with atmospheric fog
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x1a0505, 0.006);
+        
+        // Camera positioned for dramatic view
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(8, 6, 12);
+        
+        // Controls with auto-rotate
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enablePan = true;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.rotateSpeed = 1.0;
+        controls.minDistance = 5;
+        controls.maxDistance = 25;
+        controls.minPolarAngle = 0.2;
+        controls.maxPolarAngle = 1.7;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
+        controls.target = new THREE.Vector3(0, 2, 0);
+        controls.update();
+        
+        // Roman ground (ancient stone floor)
+        const groundGeometry = new THREE.CircleGeometry(22, 32);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b7355,
+            roughness: 0.7,
+            metalness: 0.2,
+            emissive: 0x3a2a1a,
+            emissiveIntensity: 0.1
+        });
+        const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+        groundMesh.rotation.x = -Math.PI / 2;
+        groundMesh.position.y = -0.1;
+        groundMesh.receiveShadow = true;
+        scene.add(groundMesh);
+        
+        // Roman mosaic pattern grid
+        const gridHelper = new THREE.GridHelper(40, 30, 0xcd853f, 0xb8860b);
+        gridHelper.position.y = -0.07;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.3;
+        scene.add(gridHelper);
+        
+        // Ancient Roman torches (lighting)
+        const torchLight1 = new THREE.PointLight(0xff6600, 1.2, 20);
+        torchLight1.position.set(-5, 2, -4);
+        scene.add(torchLight1);
+        
+        const torchLight2 = new THREE.PointLight(0xff6600, 1.2, 20);
+        torchLight2.position.set(5, 2, -4);
+        scene.add(torchLight2);
+        
+        const torchLight3 = new THREE.PointLight(0xff6600, 1.2, 20);
+        torchLight3.position.set(-4, 2, 5);
+        scene.add(torchLight3);
+        
+        const torchLight4 = new THREE.PointLight(0xff6600, 1.2, 20);
+        torchLight4.position.set(4, 2, 5);
+        scene.add(torchLight4);
+        
+        // Main atmospheric lighting
+        const mainLight = new THREE.DirectionalLight(0xffcc88, 1.2);
+        mainLight.position.set(5, 10, 6);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 30;
+        mainLight.shadow.camera.left = -10;
+        mainLight.shadow.camera.right = 10;
+        mainLight.shadow.camera.top = 10;
+        mainLight.shadow.camera.bottom = -10;
+        scene.add(mainLight);
+        
+        // Warm fill lights
+        const warmLight = new THREE.PointLight(0xff8844, 0.9, 25);
+        warmLight.position.set(-3, 5, 3);
+        scene.add(warmLight);
+        
+        const goldLight = new THREE.PointLight(0xffaa44, 0.7, 22);
+        goldLight.position.set(3, 4, -4);
+        scene.add(goldLight);
+        
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x442222, 0.5);
+        scene.add(ambientLight);
+        
+        // Fire effect light (pulsing)
+        const fireLight = new THREE.PointLight(0xff4400, 0.8, 18);
+        fireLight.position.set(0, 3, 0);
+        scene.add(fireLight);
+        
+        // Floating dust/ash particles (atmosphere)
+        const particleCount = 800;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesPositions = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount; i++) {
+            particlesPositions[i * 3] = (Math.random() - 0.5) * 40;
+            particlesPositions[i * 3 + 1] = Math.random() * 15;
+            particlesPositions[i * 3 + 2] = (Math.random() - 0.5) * 35;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlesPositions, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            color: 0xff8844,
+            size: 0.07,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+        
+        // Roman starfield
+        const starCount = 1500;
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsPositions = new Float32Array(starCount * 3);
+        
+        for (let i = 0; i < starCount; i++) {
+            starsPositions[i * 3] = (Math.random() - 0.5) * 200;
+            starsPositions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+            starsPositions[i * 3 + 2] = (Math.random() - 0.5) * 90 - 40;
+        }
+        
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({
+            color: 0xffaa77,
+            size: 0.06,
+            transparent: true,
+            opacity: 0.6
+        });
+        
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+        
+        // Roman columns around the perimeter
+        const columnGeo = new THREE.CylinderGeometry(0.25, 0.35, 1.5, 8);
+        const columnMat = new THREE.MeshStandardMaterial({ color: 0xcd853f, metalness: 0.5, roughness: 0.4 });
+        
+        const columnPositions = [
+            [-6, -0.1, -5], [-5, -0.1, -6], [5, -0.1, -6], [6, -0.1, -5],
+            [-6, -0.1, 5], [-5, -0.1, 6], [5, -0.1, 6], [6, -0.1, 5],
+            [-7, -0.1, -2], [-7, -0.1, 0], [-7, -0.1, 2], [7, -0.1, -2], [7, -0.1, 0], [7, -0.1, 2]
+        ];
+        
+        columnPositions.forEach(pos => {
+            const column = new THREE.Mesh(columnGeo, columnMat);
+            column.position.set(pos[0], pos[1], pos[2]);
+            column.castShadow = true;
+            column.receiveShadow = true;
+            scene.add(column);
+        });
+        
+        // Load the Colosseum model
+        const loader = new GLTFLoader().setPath('public/millennium_falcon/');
+        loader.load('scene.gltf', (gltf) => {
+            console.log('Colosseum model loaded successfully!');
+            const model = gltf.scene;
+            
+            // Enable shadows and add ancient Roman stone effect
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => {
+                                mat.emissiveIntensity = 0.08;
+                                mat.emissive = new THREE.Color(0x331100);
+                                mat.roughness = 0.6;
+                                mat.metalness = 0.15;
+                            });
+                        } else {
+                            child.material.emissiveIntensity = 0.08;
+                            child.material.emissive = new THREE.Color(0x331100);
+                            child.material.roughness = 0.6;
+                            child.material.metalness = 0.15;
+                        }
+                    }
+                }
+            });
+            
+            // Position the model properly
+            model.position.set(0, 0, 0);
+            model.scale.set(1, 1, 1);
+            scene.add(model);
+            
+            // Hide loading screen with fade effect
+            const progressContainer = document.getElementById('progress-container');
+            progressContainer.style.opacity = '0';
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+            }, 1000);
+            
+        }, (xhr) => {
+            const percent = Math.floor(xhr.loaded / xhr.total * 100);
+            const progressElem = document.getElementById('progress');
+            if (progressElem) {
+                progressElem.innerHTML = `🏛️ Loading Colosseum... ${percent}% 🏛️`;
+            }
+        }, (error) => {
+            console.error('Error loading model:', error);
+            const progressContainer = document.getElementById('progress-container');
+            const progressElem = document.getElementById('progress');
+            if (progressElem) {
+                progressElem.innerHTML = '⚠️ Model not found! Please ensure the GLTF file is in public/millennium_falcon/ ⚠️';
+                progressElem.style.color = '#ff8888';
+            }
+        });
+        
+        // Animation variables
+        let time = 0;
+        
+        // Window resize handler
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            time += 0.016;
+            
+            // Animate fire and torch lights
+            fireLight.intensity = 0.6 + Math.sin(time * 3) * 0.3;
+            torchLight1.intensity = 0.9 + Math.sin(time * 2.5) * 0.3;
+            torchLight2.intensity = 0.9 + Math.sin(time * 2.3) * 0.3;
+            torchLight3.intensity = 0.9 + Math.cos(time * 2.7) * 0.3;
+            torchLight4.intensity = 0.9 + Math.cos(time * 2.1) * 0.3;
+            warmLight.intensity = 0.8 + Math.sin(time * 1.2) * 0.2;
+            goldLight.intensity = 0.6 + Math.cos(time * 1.5) * 0.2;
+            
+            // Rotate particles
+            particles.rotation.y += 0.001;
+            stars.rotation.y += 0.0003;
+            
+            // Auto-rotate controls
+            controls.update();
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Helper function to toggle info panel
+        window.toggleInfo = function() {
+            const panel = document.getElementById('info-panel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                panel.style.animation = 'slideUp 0.5s ease-out';
+            } else {
+                panel.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
